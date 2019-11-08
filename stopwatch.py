@@ -7,6 +7,10 @@ from sys import platform
 
 COMEUP_TIME = 2 * 3600. # 2 horas
 
+# Platform variables
+ON_LINUX = platform.startswith("linux")
+ON_WINDOWS = platform.startswith("win")
+
 def progress_bar(total_length, total, completed, text = ''):
 	percent = float(completed)/total
 	bar_length = int(total_length - (len(text) + 4 + len(str(int(percent*100)))))
@@ -16,13 +20,13 @@ def progress_bar(total_length, total, completed, text = ''):
 	# fazer as primeiras 2 horas em outra cor(come up)
 	
 def clear_screen():
-	if platform.startswith("win"):
+	if ON_WINDOWS:
 		os.system("cls")
-	elif platform.startswith("linux"):
+	elif ON_LINUX:
 		os.system("clear")
 		
 def get_terminal_width():
-	if platform.startswith("linux"):
+	if ON_LINUX:
 		return int(os.popen('stty size', 'r').read().split()[1])
 	else:
 		return 80 # FIX ME
