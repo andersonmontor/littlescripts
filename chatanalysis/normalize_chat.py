@@ -1,65 +1,88 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime as dt
-import chatclasses as cc
+import chat as cc
+import shared as g
+from shared import print_verbose
+from sys import argv, exit
 
-# TODO: checagem de se log nao quebra ordem, se as datas estão sequenciais
-# pra casos em que dei join repetido sem querer
+# TODO: normalizar pra uma db sqlite, manter opção de passar pra um arquivo de saida
 
+if len(argv) < 2:
+	print_verbose("Escolha o arquivo a ser normalizado da pasta ../data/", g.QUIET)
+	exit(1)
+	
+path_chatfile = "../data/%s" % argv[1]
 
-path_chatfile = "../data/tay_whatsapp_all.txt"
+# Formatos de export que ja vi em logs de whatsapp
+regs = (r"^(\d{4})\.(\d{2}).(\d{2}) - (\d{2}):(\d{2}):(\d{2}); (.+?): (.+)$",
+		r"^(\d{1,2})/(\d{1,2})/(\d{1,4}), (\d{2}):(\d{2}) - (.+?): (.+$)$",
+		r"^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2});(.+?): (.*)$",
+		r"^(\d{1,2})/(\d{1,2})/(\d{1,4}) (\d{2}):(\d{2}) - (.+?): (.+$)$",
+		r"^(\d{1,2})/(\d{1,2})/(\d{1,4}), (\d{1,2}):(\d{1,2}) (AM|PM) - (.+?): (.+$)$"
+)
 
-reg1 = r"^(\d{1,2})/(\d{1,2})/(\d{1,4}), (\d{2}):(\d{2}) - (.+): (.+$)"
-reg2 = r"^(\d{4})\.(\d{2}).(\d{2}) - (\d{2}):(\d{2}):(\d{2}); (.+): (.+)$"
-reg3 = cc.ChatLog.reg # formato output
+regs_evals = ("cc.Line(int(gp[2]), int(gp[1]), int(gp[0]), int(gp[3]), int(gp[4]), gp[6], gp[7], int(gp[5]))",
+			  "cc.Line(int(gp[1]), int(gp[0]), int(gp[2]), int(gp[3]), int(gp[4]), gp[5], gp[6])",
+			  "cc.Line(int(gp[2]), int(gp[1]), int(gp[0]), int(gp[3]), int(gp[4]), gp[6], gp[7], int(gp[5]))",
+			  "cc.Line(int(gp[1]), int(gp[0]), int(gp[2]), int(gp[3]), int(gp[4]), gp[5], gp[6])",
+			  "cc.Line(int(gp[1]), int(gp[0]), int(gp[2]), int(gp[3]), int(gp[4]), gp[6], gp[7], am_pm = gp[5])"
+)
+
+regs_readable = (r"YYYY.MM.DD - HH:MM:SS; NOME: MSG",
+		r"MM/DD/YYYY, HH:MM - NOME: MSG",
+		r"YYYY-MM-DD HH:MM:SS;NOME: MSG",
+		r"MM/DD/YYYY HH:MM - NOME: MSG",
+		r"MM/DD/YY, HH:MM AM|PM - NOME: MSG"
+)
 
 f = open(path_chatfile)
 
 output_lines = []
 newlineobj = None
 
-counts = [0, 0, 0, 0, 0]
+counts = {"newline": 0, "inconsistent_date": 0}
+for r in regs:
+	counts[r] = 0
+	
 for line in f.readlines():
-	if re.search(reg1, line):
-		g = re.search(reg1, line).groups()
-		#                (mes,       dia,       ano,       hora,      minuto,    nome, mensagem)
-		newlineobj = cc.Line(int(g[1]), int(g[0]), int(g[2]), int(g[3]), int(g[4]), g[5], g[6])
-		output_lines.append(newlineobj)
-		
-		counts[0] += 1
-	elif re.search(reg2, line):
-		g = re.search(reg2, line).groups()
-		#                (dia,       mes,       ano,       hora,      minuto,    nome, mensagem)
-		newlineobj = cc.Line(int(g[2]), int(g[1]), int(g[0]), int(g[3]), int(g[4]), g[6], g[7], int(g[5]))
-		output_lines.append(newlineobj)
-	
-		counts[1] += 1
-	elif re.search(reg3, line):
-		g = re.search(reg3, line).groups()
-		#                (dia,       mes,       ano,       hora,      minuto,    nome, mensagem)
-		newlineobj = cc.Line(int(g[2]), int(g[1]), int(g[0]), int(g[3]), int(g[4]), g[6], g[7], int(g[5]))
-		output_lines.append(newlineobj)
-	
-		counts[2] += 1
-	elif newlineobj:
-		newlineobj.mensagem += cc.Line.DELIM + line.strip()
-		counts[3] += 1
-	else:
-		# Nao deve acontecer num formato correto de arquivo de chat
-		raw_input("ERROR: invalid first line(%s)" % line.strip())
-		counts[4] += 1
-		
+
+	flag_done = False
+	for i in range(len(regs)):
+		if re.search(regs[i], line):
+			gp = re.search(regs[i], line).groups()
+			newlineobj = eval(regs_evals[i])
+			output_lines.append(newlineobj)
+			
+			counts[regs[i]] += 1
+			flag_done = True
+			break
+			
+	if not flag_done:
+		if newlineobj:
+			newlineobj.mensagem += cc.Line.DELIM + line.strip()
+			counts["newline"] += 1
+		else:
+			# Nao deve acontecer num formato correto de arquivo de chat
+			raw_input("ERROR: invalid first line(%s)" % line.strip())
+			
 	if len(output_lines) >= 2:		
 		if output_lines[-2].dt > output_lines[-1].dt:
 			date_difference = (output_lines[-2].dt - output_lines[-1].dt).seconds
-			print "WARNING: inconsistent date sequence((%d) %s)" % (date_difference, line.strip())
-		
-
+			print_verbose("WARNING: inconsistent date sequence((%d) %s)" % (date_difference, line.strip()), g.VERBOSE)
+			counts["inconsistent_date"] += 1
+			
 f.close()
 
-print counts
+print_verbose('\n', g.NORMAL)
+for i in range(len(regs)):
+	print_verbose("%s: %d" % (regs_readable[i], counts[regs[i]]), g.NORMAL)
+print_verbose("NEWLINE(other): %d" % counts["newline"], g.NORMAL)
+print_verbose("Inconsistent dates: %d" % counts["inconsistent_date"], g.NORMAL)
 
-fout = open("../data/normalized_chat.txt", 'w')
+og_filename = re.search(r".*/(.+)\.txt", path_chatfile).groups()[0]
+
+fout = open("../data/normalized_%s.txt" % og_filename, 'w')
 
 for lineobj in output_lines:
 	try:
