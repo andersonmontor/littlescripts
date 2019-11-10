@@ -1,0 +1,22 @@
+Ideias para possivel implementação.
+
+Estrutura:
+- modularizar código de fonte de dados, pra permitir outras fontes(face, insta, etc)
+
+Analises simples:
+- plotar imagens/arquivos enviados
+- estatisticas totais: dias de conversa, linhas/palavras, etc
+- estatisticas minimas/medias/maximas: mensagens no dia, imagens no dia, etc
+- atividade por horarios do dia
+
+Análises mais complexas:
+- análise de emoção a diversos niveis de granularidade(por mensagem, por dia, por periodo, etc)
+- análise de correlação entre diversos fatores(acontecimentos, emoções(acima), etc)
+- unsupervised learning pra detectar "blocos" semelhantes de comportamento
+	- na mesma linha, usuario poder apontar blocos personalizados que ele achar interessante e querer extrair insights/correlações deles
+
+Visualizações/saída de dados:
+- melhorar as visuais atuais
+- textual, com capacidade de exportar pra ser usado em outras ferramentas
+
+Ver metodos e artigos cientificos na area de ciencia de dados, ver se tem alguma tecnologia/tecnica interessante que pode ser aplicado.
