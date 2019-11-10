@@ -39,8 +39,11 @@ class ChatPlotter:
 		
 		if regex:
 			plt.title("Ocorrencias/dia: (%s)" % regex)
+			plt.ylabel("Ocorrencias")
 		else:
 			plt.title("Palavras/dia")
+			plt.ylabel("Palavras")
+		plt.xlabel("Dia")
 		plt.legend()
 		#plt.scatter(X, Y)
 		plt.show()
