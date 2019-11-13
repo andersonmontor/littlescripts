@@ -15,7 +15,7 @@ Análises mais complexas:
 - unsupervised learning pra detectar "blocos" semelhantes de comportamento
 	- na mesma linha, usuario poder apontar blocos personalizados que ele achar interessante e querer extrair insights/correlações deles
 
-Visualizações/saída de dados:
+Visualizações/saída de dados/plotting:
 - melhorar as visuais atuais
 - textual, com capacidade de exportar pra ser usado em outras ferramentas
 

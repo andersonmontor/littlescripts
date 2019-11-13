@@ -20,7 +20,39 @@ class ChatPlotter:
 		
 		return (X, Y)
 		
-	def plot_daily_count(self, regex = None):
+		
+	# Plota ocorrencias de um chat todo ou de um sender especifico
+	def plot_occurs_line(self, sender = None, regex = None, cores = None)
+	
+		if not cores:
+			cores = "brgcmykw"
+		
+		senders = [sender]
+		if sender == None:
+			senders = self.chatobj.users
+			
+		re_label = "ALL"
+		if regex:
+			re_label = regex		
+			
+		for i in range(senders):
+			Xd, Y = self._genXY(self.chatobj.countbydays(regex, senders[i]))
+			X = dates.date2num(Xd)
+			
+			plt.plot_date(X, Y, '%s-' % cores[i], linewidth = 0.5, label="%s(%s)" % (re_label, senders[i][i]))		
+
+		plt.title("Ocorrencias/dia")
+		plt.ylabel("Ocorrencias")
+		plt.xlabel("Dia")
+	
+	#Mostra na tela o plot configurado
+	def display(self):
+		plt.legend()
+		plt.show()
+	
+	# todo: pra esparsos colocar numero em cima, ou outro jeito de ficar mais visivel
+	# graph_lines: tuplas (chatobj, nome = None(todos senders), regex = None(todas palavras/linhas), color)
+	def plot_daily_count(self, graph_lines):
 		
 		cores = "brgcmykw"
 		
@@ -30,13 +62,6 @@ class ChatPlotter:
 			
 			plt.plot_date(X, Y, '%s-' % cores[i], linewidth = 0.5, label=self.chatobj.users[i])
 		
-		
-		
-		# for i in range(len(X)):
-			# print Xd[i], Y[i]
-		# print len(X), len(Y)
-		
-		
 		if regex:
 			plt.title("Ocorrencias/dia: (%s)" % regex)
 			plt.ylabel("Ocorrencias")
@@ -44,9 +69,11 @@ class ChatPlotter:
 			plt.title("Palavras/dia")
 			plt.ylabel("Palavras")
 		plt.xlabel("Dia")
-		plt.legend()
-		#plt.scatter(X, Y)
-		plt.show()
+		
+	# TODO: recebe um vetor de (nome, regex, color = None) e plota no mesmo grafico, ou adiciona essa função na daily count mesmo
+	# ou as vezes ate mixar varios chats
+	def multi_daily_count(self, nomes_regexes):
+		pass
 		
 	def plot_response_times(self):
 		pass
@@ -56,5 +83,6 @@ class ChatPlotter:
 		
 	# Pega o self.chatobj + os do parametro e plota os daily msgs
 	# ver se da pra generalizar depois pra poder misturar chats com qualquer funcao
+	# melhor: sempre passar o conjunto de chats como parametro pra essa classe, ao invés de ficar atrelada a um unico
 	def plot_daily_multichats(self, otherchats):
 		pass
