@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Take a list of (source, destination) files/dirs and sync them
-# TODO: sync, encrypt and sync, 
+# TODO: sync, encrypt and sync, outras funções interessantes
 from hashlib import md5
 import os
 

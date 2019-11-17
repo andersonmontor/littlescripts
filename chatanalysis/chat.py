@@ -58,7 +58,7 @@ class ChatLog:
 				self.lines.append(newlineobj)
 			else:
 				line_errors += 1
-				raw_input(line)
+				raw_input("Linha: " + line)
 		
 		f.close()
 		
@@ -152,3 +152,29 @@ class ChatLog:
 			dias_count.append((dia, occurs))
 			
 		return g.sort_by_kelement(dias_count, 1)
+		
+	# TODO: media de mensagens num periodo
+	def media_periodo(self, start, end, sender = None, regex = None):
+		pass
+		
+	# TODO: media de tempo de resposta pra cada dia
+	def response_times(self):
+		pass
+		
+	# TODO: estatisticas gerais de um dia(ou periodo)
+	def statistics(self):
+		pass
+		
+	# TODO: diferença de estatistica entre 2 intervalos
+	# interval_A e interval_B são listas de tuplas (dt_start, dt_end), period_2 = "COMPLEMENT" é o caso especial de ser o complemento do interval_A no chat
+	def interval_difference(interval_A, period_2):
+		pass
+		
+		if period_2 == "COMPLEMENT":
+			pass
+		
+	# TODO: gera tuplas de intervalos periodicamente
+	#period_delta: a cada quanto tempo
+	#period_duration: quanto dura
+	def _periodic_intervals(self, period_delta, period_duration, start_dt, end_dt):
+		pass
