@@ -74,4 +74,4 @@ if __name__ == '__main__':
 		# TODO: opção de settar um alarme pra daqui x tempo, pra lembrar a pessoa de voltar a produção(usar push notifications e maybe som)
 		# TODO: função pomodoro(usar push notifications e maybe som)
 		# TODO: alguma metrica pra testar eficacia, ai fazer regressao linear pra mostrar o % de eficacia atual
-		# TODO: overlay no desktop(linux e windows) mostrando format string combinando valores atuais(duracao, duracao_comeup, duracao_percent, restante, end_time, etc)
+		# TODO: overlay no desktop(linux e windows) mostrando format string combinando valores atuais(duracao, duracao_comeup, duracao_percent, restante, end_time, etc), also uma forma de mostrar intensidade atual
