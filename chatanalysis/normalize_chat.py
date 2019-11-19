@@ -38,8 +38,8 @@ regs_readable = (r"YYYY.MM.DD - HH:MM:SS; NOME: MSG",
 
 f = open(path_chatfile)
 
-output_lines = []
 newlineobj = None
+chatobj = cc.ChatLog()
 
 counts = {"newline": 0, "inconsistent_date": 0}
 for r in regs:
@@ -52,7 +52,7 @@ for line in f.readlines():
 		if re.search(regs[i], line):
 			gp = re.search(regs[i], line).groups()
 			newlineobj = eval(regs_evals[i])
-			output_lines.append(newlineobj)
+			chatobj.add_line(newlineobj)
 			
 			counts[regs[i]] += 1
 			flag_done = True
@@ -66,9 +66,9 @@ for line in f.readlines():
 			# Nao deve acontecer num formato correto de arquivo de chat
 			raw_input("ERROR: invalid first line(%s)" % line.strip())
 			
-	if len(output_lines) >= 2:		
-		if output_lines[-2].dt > output_lines[-1].dt:
-			date_difference = (output_lines[-2].dt - output_lines[-1].dt).seconds
+	if len(chatobj.lines) >= 2:		
+		if chatobj.lines[-2].dt > chatobj.lines[-1].dt:
+			date_difference = (chatobj.lines[-2].dt - chatobj.lines[-1].dt).seconds
 			print_verbose("WARNING: inconsistent date sequence((%d) %s)" % (date_difference, line.strip()), g.VERBOSE)
 			counts["inconsistent_date"] += 1
 			
@@ -82,19 +82,11 @@ print_verbose("Inconsistent dates: %d" % counts["inconsistent_date"], g.NORMAL)
 
 og_filename = re.search(r".*/(.+)\.txt", path_chatfile).groups()[0]
 
-fout = open("../data/normalized_%s.txt" % og_filename, 'w')
+out_choice = raw_input("Output em sqlite3 db(1) ou txt file(2): ")
 
-for lineobj in output_lines:
-	try:
-		fout.write(str(lineobj))
-	except:
-		print lineobj.mensagem.strip()
-		raw_input()
-
-fout.close()
-
-
-
-
-
-
+if out_choice == '1':
+	chatobj.export_sqlite("../data/normalized_%s.db" % og_filename)
+elif out_choice == '2':
+	chatobj.export_textfile("../data/normalized_%s.txt" % og_filename)
+else:
+	print "Opcao invalida"

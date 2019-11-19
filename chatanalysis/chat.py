@@ -2,6 +2,7 @@
 import shared as g
 from datetime import datetime as dt
 from datetime import date as dtdate
+import sqlite3
 import re
 
 
@@ -35,13 +36,20 @@ class ChatLog:
 
 	reg = r"^(\d{4})\.(\d{2}).(\d{2}) - (\d{2}):(\d{2}):(\d{2}); (.+?): (.+)$"
 	
-	def __init__(self, path):
-		self.load_from_file(path)
-		self.calculate_users()			
+	def __init__(self, path = None):
+		self.users = []
+		self.lines = []
+		if path != None:
+			self.load_from_file(path)
+
+	def add_line(self, lineobj):
+		if lineobj.nome not in self.users:
+			self.users.append(lineobj.nome)
+
+		self.lines.append(lineobj)
 	
 	# Retorno(int): -1 se deu erro, se nao numero de erros de inconsistencia de formato(0 se foi perfeito)
 	def load_from_file(self, path):
-		self.lines = []
 		line_errors = 0
 		
 		try:
@@ -55,7 +63,7 @@ class ChatLog:
 				gp = re.search(self.reg, line, re.IGNORECASE).groups()
 				#                (dia,        mes,        ano,        hora,       minuto,     nome,  msg,   segundos)
 				newlineobj = Line(int(gp[2]), int(gp[1]), int(gp[0]), int(gp[3]), int(gp[4]), gp[6], gp[7], int(gp[5]))
-				self.lines.append(newlineobj)
+				self.add_line(newlineobj)
 			else:
 				line_errors += 1
 				raw_input("Linha: " + line)
@@ -63,14 +71,37 @@ class ChatLog:
 		f.close()
 		
 		return line_errors
+
+	def load_from_db(self, db_filename):
+		pass
 		
-	# Descobre os usuarios do chat
-	def calculate_users(self):
-		self.users = []
-		for linha in self.lines:
-			if linha.nome not in self.users:
-				self.users.append(linha.nome)
-		
+	def export_textfile(self, filename):
+
+		fout = open(filename, 'w')
+
+		for lineobj in self.lines:
+			try:
+				fout.write(str(lineobj))
+			except:
+				print lineobj.mensagem.strip()
+				raw_input()
+
+		fout.close()
+
+	def export_sqlite(self, db_filename):
+		conn = sqlite3.connect(db_filename)
+
+		c = conn.cursor()
+		c.execute('''CREATE TABLE chatlog
+		             (date_time datetime, sender text, msg text)''')
+
+		for lineobj in self.lines:
+			c.execute("INSERT INTO chatlog VALUES (?, ?, ?)", (lineobj.dt, unicode(lineobj.nome), unicode(lineobj.mensagem)))
+
+
+		conn.commit()
+		conn.close()
+
 	# Retorno(int): numero de mensagens do chat
 	# nome: se quer filtrar por nome
 	def len(self, nome = None):
@@ -103,6 +134,8 @@ class ChatLog:
 				dtdates.append(dtdate(dia[2], dia[1], dia[0]))
 			
 		return dtdates
+
+
 		
 	# Retorno(tupla(dia, linhas)): agrupa linhas do chat pra cada dia distinto
 	def groupbydays(self):
