@@ -53,13 +53,9 @@ def print_stopwatch(start_time, end_time = None):
 	else:
 		aftercomeup_passed = timedelta(seconds = 0)
 	
-	#print "Duracao:  %02d:%02d:%02d (%02d:%02d:%02d)" % (h_passed, m_passed, s_passed, hcu_passed, mcu_passed, scu_passed)
 	print "Duracao:  %s (%s)" % (str_timedelta(passed), str_timedelta(aftercomeup_passed))
 	
 	if end_time:
-		#h2, m2, s2 = end_time.hour, end_time.minute, datetime.second
-		#h3, m3, s3 = seconds_remaining / 3600, (seconds_remaining % 3600) / 60, (seconds_remaining % 3600) % 60
-		#seconds_remaining = (end_time - dt.now()).seconds
 		remaining = end_time - dt.now()
 		total_duration = end_time - start_time
 		percent_comeup = COMEUP_TIME.total_seconds()/total_duration.total_seconds()
