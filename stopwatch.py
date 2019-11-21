@@ -14,20 +14,26 @@ from sys import platform
 # TODO: função pomodoro(usar push notifications e maybe som)
 # TODO: alguma metrica pra testar eficacia, ai fazer regressao linear pra mostrar o % de eficacia atual
 # TODO: overlay no desktop(linux e windows) mostrando format string combinando valores atuais(duracao, duracao_comeup, duracao_percent, restante, end_time, etc), also uma forma de mostrar intensidade atual
+# TODO: ver se é possivel pegar a duracao automaticamente do celular(ou algo com o datacollector.py)
 
-COMEUP_TIME = timedelta(seconds = 2 * 3600.) # 2 horas
+COMEUP_SECONDS = 2 * 3600. # 2 horas
 
 # Platform variables
 ON_LINUX = platform.startswith("linux")
 ON_WINDOWS = platform.startswith("win")
 
-def progress_bar(total_length, total, completed, text = ''):
+def progress_bar(total_length, total, completed, text = '', cmup_percent = None):
 	percent = completed.total_seconds()/float(total.total_seconds())
 	bar_length = int(total_length - (len(text) + 4 + len(str(int(percent*100)))))
 	n_bars = int(percent * bar_length)
-	return "%s[%s%s] %d%%" % (text, 'X' * n_bars, '-' * (bar_length - n_bars), int(percent*100))
+	p_bar_str = "%s[%s%s] %d%%" % (text, 'X' * n_bars, '-' * (bar_length - n_bars), int(percent*100))
+	if cmup_percent == None:
+		return p_bar_str
+	else:		
+		cmup_marker_str = ' ' * (int(len(text) + 1 + cmup_percent * bar_length) - 1) + '^'		
+		return p_bar_str + '\n' + cmup_marker_str
 
-	# TODO: fazer o comeup de outro cor, ou indicar com um ^ embaixo(mais simples)
+	# TODO: fazer o comeup de outro cor, ou indicar com um ^ embaixo(mais simples)(feito, deixar aqui pro find_TODOs.py pegar depois)
 	
 def clear_screen():
 	if ON_WINDOWS:
@@ -46,27 +52,33 @@ def str_timedelta(td):
 	h, m, s = total_secs / 3600, (total_secs % 3600) / 60, (total_secs % 3600) % 60
 	return "%02d:%02d:%02d" % (h, m, s)
 	
-def print_stopwatch(start_time, end_time = None):
+# TODO: quando tem comeup mas nao end_time, ver todas combinacoes
+def print_stopwatch(start_time, end_time = None, comeup_duration = None):
 	passed = dt.now() - start_time
-	if (passed - COMEUP_TIME).total_seconds() > 0:
-		aftercomeup_passed = (passed - COMEUP_TIME)
+	
+	if comeup_duration != None:
+		if (passed - comeup_duration).total_seconds() > 0:
+			aftercomeup_passed = (passed - comeup_duration)
+		else:
+			aftercomeup_passed = timedelta(seconds = 0)
+			
+		print "Duracao:  %s (%s)" % (str_timedelta(passed), str_timedelta(aftercomeup_passed))
 	else:
-		aftercomeup_passed = timedelta(seconds = 0)
-	
-	print "Duracao:  %s (%s)" % (str_timedelta(passed), str_timedelta(aftercomeup_passed))
-	
-	if end_time:
+		print "Duracao:  %s" % (str_timedelta(passed))
+		
+	if end_time != None:
 		remaining = end_time - dt.now()
 		total_duration = end_time - start_time
-		percent_comeup = COMEUP_TIME.total_seconds()/total_duration.total_seconds()
+		percent_comeup = comeup_duration.total_seconds()/total_duration.total_seconds()
 		print "Restante: %s (%s)" % (str_timedelta(remaining), end_time.strftime("%H:%M:%S"))
 		print "Porcentagem comeup: %d%%" % (percent_comeup * 100)
-		print progress_bar(get_terminal_width(), total_duration, passed, 'Duracao: ')
+		print progress_bar(get_terminal_width(), total_duration, passed, 'Duracao: ', percent_comeup)
+		
 	
 def main():
 	print "Horario atual: %02d:%02d:%02d" % (dt.now().hour, dt.now().minute, dt.now().second)
-	choice = raw_input("Duracao inicial(hh, mm, ss), 0 se comeca agora: ")
-	if choice == '0':
+	choice = raw_input("Duracao inicial(hh, mm, ss), enter se comeca agora: ")
+	if choice == '':
 		passed = timedelta(seconds = 0)
 	else:
 		h, m, s = eval(choice)
@@ -74,14 +86,18 @@ def main():
 		
 	start_time = dt.now() - passed
 
-	choice_pb = raw_input("Ate que horas(hh, mm, ss), 0 pra nao ter progress bar: ")
-	if choice_pb != '0':
+	choice_pb = raw_input("Ate que horas(hh, mm, ss), enter pra nao ter progress bar: ")
+	if choice_pb != '':
 		h2, m2, s2 = eval(choice_pb)
 		end_time = dt.now().replace(hour = h2, minute = m2, second = s2)
+		comeup_duration = timedelta(seconds = COMEUP_SECONDS)
 
 	while True:
 		clear_screen()
-		print_stopwatch(start_time, end_time)
+		if choice_pb != '':
+			print_stopwatch(start_time, end_time, comeup_duration)
+		else:
+			print_stopwatch(start_time)
 		sleep(1)
 
 if __name__ == '__main__':
