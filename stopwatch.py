@@ -45,7 +45,7 @@ def get_terminal_width():
 	if ON_LINUX:
 		return int(os.popen('stty size', 'r').read().split()[1])
 	else:
-		return 80 # FIX ME
+		return 80 #TODO: arrumar
 		
 def str_timedelta(td):
 	total_secs = td.total_seconds()
@@ -62,22 +62,22 @@ def print_stopwatch(start_time, end_time = None, comeup_duration = None):
 		else:
 			aftercomeup_passed = timedelta(seconds = 0)
 			
-		print "Duracao:  %s (%s)" % (str_timedelta(passed), str_timedelta(aftercomeup_passed))
+		print("Duracao:  %s (%s)" % (str_timedelta(passed), str_timedelta(aftercomeup_passed)))
 	else:
-		print "Duracao:  %s" % (str_timedelta(passed))
+		print("Duracao:  %s" % (str_timedelta(passed)))
 		
 	if end_time != None:
 		remaining = end_time - dt.now()
 		total_duration = end_time - start_time
 		percent_comeup = comeup_duration.total_seconds()/total_duration.total_seconds()
-		print "Restante: %s (%s)" % (str_timedelta(remaining), end_time.strftime("%H:%M:%S"))
-		print "Porcentagem comeup: %d%%" % (percent_comeup * 100)
-		print progress_bar(get_terminal_width(), total_duration, passed, 'Duracao: ', percent_comeup)
+		print("Restante: %s (%s)" % (str_timedelta(remaining), end_time.strftime("%H:%M:%S")))
+		print("Porcentagem comeup: %d%%" % (percent_comeup * 100))
+		print(progress_bar(get_terminal_width(), total_duration, passed, 'Duracao: ', percent_comeup))
 		
 	
 def main():
-	print "Horario atual: %02d:%02d:%02d" % (dt.now().hour, dt.now().minute, dt.now().second)
-	choice = raw_input("Duracao inicial(hh, mm, ss), enter se comeca agora: ")
+	print("Horario atual: %02d:%02d:%02d" % (dt.now().hour, dt.now().minute, dt.now().second))
+	choice = input("Duracao inicial(hh, mm, ss), enter se comeca agora: ")
 	if choice == '':
 		passed = timedelta(seconds = 0)
 	else:
@@ -86,7 +86,7 @@ def main():
 		
 	start_time = dt.now() - passed
 
-	choice_pb = raw_input("Ate que horas(hh, mm, ss), enter pra nao ter progress bar: ")
+	choice_pb = input("Ate que horas(hh, mm, ss), enter pra nao ter progress bar: ")
 	if choice_pb != '':
 		h2, m2, s2 = eval(choice_pb)
 		end_time = dt.now().replace(hour = h2, minute = m2, second = s2)

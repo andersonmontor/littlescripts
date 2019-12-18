@@ -122,9 +122,14 @@ class ChatPlotter:
 	def plot_daily_multichats(self, otherchats):
 		pass
 		
-	# TODO: mistura os Y de 2 plots diferentes fazendo operacao bit a bit
+	# mistura os Y de 2 plots diferentes fazendo operacao bit a bit
 	def arithmetic_plot(Xa, Xb, operacao):
 	
 		assert (len(Xa) == len (Xb))
 		pass
+		#TODO
+		
+	def plot_nomessages_interval(self, min_days):
+		days = self.chatobj.getUniqueDays()
+		#TODO
 	
